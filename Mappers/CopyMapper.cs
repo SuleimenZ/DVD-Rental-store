@@ -14,7 +14,7 @@ namespace DVD_Rental_store
             using (var conn = new NpgsqlConnection(connection_string))
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand("SELECT * FROM copies WHERE copy_id = @copy_id", conn))
+                using (var cmd = new NpgsqlCommand("SELECT * FROM copies WHERE copy_id = @id", conn))
                 {
                     cmd.Parameters.AddWithValue("@id", copy_id);
                     NpgsqlDataReader reader = cmd.ExecuteReader();
