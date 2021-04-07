@@ -34,6 +34,33 @@ namespace DVD_Rental_store
             }
         }
 
+        public List<Rental> GetClientHistory(int client_id)
+        {
+            List<Rental> rentals = new List<Rental>();
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT * FROM rentals " +
+                                                   "JOIN copies ON copies.copy_id = rentals.copy_id " +
+                                                   "WHERE client_id = @id " +
+                                                   "ORDER BY date_of_rental", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", client_id);
+                    NpgsqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        int rental_id = (int)reader["rental_id"];
+                        int copy_id = (int)reader["copy_id"];
+                        string date_of_rental = reader["date_of_rental"].ToString();
+                        string date_of_return = (string)reader["date_of_return"].ToString();
+                        rentals.Add(new Rental(rental_id, copy_id, client_id, date_of_rental, date_of_return));
+                    }
+                }
+            }
+
+            return rentals;
+        }
+
         public void Save(Rental rental)
         {
             var rental_id = rental.Rental_id;

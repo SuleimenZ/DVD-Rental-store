@@ -71,5 +71,27 @@ namespace DVD_Rental_store
                 }
             }
         }
+
+        public override string ToString()
+        {
+            string result = "";
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using(var cmd = new NpgsqlCommand("SELECT movies.movie_id, title, COUNT(CASE WHEN available = true THEN copy_id end) as available, COUNT(copies.movie_id) AS max " +
+                                                  "FROM movies " +
+                                                  "JOIN copies ON copies.movie_id = movies.movie_id " +
+                                                  "GROUP BY movies.movie_id " +
+                                                  "ORDER BY movies.movie_id", conn))
+                {
+                    NpgsqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {                        
+                        result += $"{reader["movie_id"]}: {reader["title"]}, {reader["available"]}/{reader["max"]} available\n";
+                    }
+                    return result;
+                }
+            }
+        }
     }
 }
