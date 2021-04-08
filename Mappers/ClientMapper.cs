@@ -33,6 +33,30 @@ namespace DVD_Rental_store
             }
         }
 
+        public int GetLastId()
+        {
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT MAX(client_id) FROM clients", conn))
+                {
+                    var reader = cmd.ExecuteReader();
+
+                    if(reader.Read())
+                    {
+                        return (int)reader["max"];
+                    }
+                    return 0;
+                }
+
+            }
+        }
+
+        public int GetNextId()
+        {
+            return GetLastId() + 1;
+        }
+
         public void Save(Client client)
         {
             var id = client.Id;
@@ -66,6 +90,24 @@ namespace DVD_Rental_store
                 {
                     cmd.Parameters.AddWithValue("@id", id);
                     cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public override string ToString()
+        {
+            string result = "";
+            using(var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using(var cmd = new NpgsqlCommand("SELECT * FROM clients",conn))
+                {
+                    var reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        result += $"{reader["client_id"]}: {reader["first_name"]} {reader["last_name"]}\n";
+                    }
+                    return result;
                 }
             }
         }

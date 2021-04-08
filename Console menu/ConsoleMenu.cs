@@ -53,10 +53,9 @@ namespace DVD_Rental_store
                         break;
                     case ConsoleKey.Escape:
                         notExit = false;
+                        
                         break;
                 }
-                //Console.Clear();
-                //Console.SetCursorPosition(0, 0); //fix displaying :o
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Data.SqlTypes;
 using Npgsql;
 
 namespace DVD_Rental_store
@@ -22,9 +22,43 @@ namespace DVD_Rental_store
                     {
                         int copy_id = (int)reader["copy_id"];
                         int client_id = (int)reader["client_id"];
-                        string date_of_rental = (string)reader["date_of_rental"];
-                        string date_of_return = (string)reader["date_of_return"];
+                        DateTime date_of_rental = (DateTime)reader["date_of_rental"];
+                        DateTime date_of_return = (DateTime)reader["date_of_return"];
                         return new Rental(rental_id, copy_id, client_id, date_of_rental, date_of_return);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        public Rental GetByCopyId(int id)
+        {
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT * FROM rentals " +
+                                                   "JOIN copies ON copies.copy_id = rentals.copy_id " +
+                                                   "WHERE rentals.copy_id = @id AND date_of_return IS null", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    NpgsqlDataReader reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        int rental_id = (int)reader["rental_id"];
+                        int copy_id = (int)reader["copy_id"];
+                        int client_id = (int)reader["client_id"];
+                        DateTime date_of_rental = (DateTime)reader["date_of_rental"];
+                        if(reader["date_of_return"] == null)
+                        {
+                            return new Rental(rental_id, copy_id, client_id, date_of_rental, (DateTime)reader["date_of_return"]);
+                        }
+                        else
+                        {
+                            return new Rental(rental_id, copy_id, client_id, date_of_rental, null);
+                        }
                     }
                     else
                     {
@@ -51,14 +85,38 @@ namespace DVD_Rental_store
                     {
                         int rental_id = (int)reader["rental_id"];
                         int copy_id = (int)reader["copy_id"];
-                        string date_of_rental = reader["date_of_rental"].ToString();
-                        string date_of_return = (string)reader["date_of_return"].ToString();
+                        DateTime date_of_rental = (DateTime)reader["date_of_rental"];
+                        DateTime date_of_return = (DateTime)reader["date_of_return"];
                         rentals.Add(new Rental(rental_id, copy_id, client_id, date_of_rental, date_of_return));
                     }
                 }
             }
 
             return rentals;
+        }
+
+        public int GetLastId()
+        {
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT MAX(rental_id) FROM rentals", conn))
+                {
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        return (int)reader["max"];
+                    }
+                    return 0;
+                }
+
+            }
+        }
+
+        public int GetNextId()
+        {
+            return GetLastId() + 1;
         }
 
         public void Save(Rental rental)
@@ -72,14 +130,16 @@ namespace DVD_Rental_store
             using (var conn = new NpgsqlConnection(connection_string))
             {
                 conn.Open();
-                using (var cmd = new NpgsqlCommand("INSERT INTO movies (rental_id, copy_id, client_id, date_of_rental, date_of_return)" +
-                                                   "VALUES (@rental_id, @copy_id, @client_id, @date_of_rental, @date_of_return)", conn))
+                using (var cmd = new NpgsqlCommand("INSERT INTO rentals (rental_id, copy_id, client_id, date_of_rental, date_of_return)" +
+                                                   "VALUES (@rental_id, @copy_id, @client_id, @date_of_rental, @date_of_return)" +
+                                                   "ON CONFLICT (rental_id) DO UPDATE " +
+                                                   "SET copy_id = @copy_id, client_id = @client_id, date_of_rental = @date_of_rental, date_of_return = @date_of_return", conn))
                 {
                     cmd.Parameters.AddWithValue("@rental_id", rental_id);
                     cmd.Parameters.AddWithValue("@copy_id", copy_id);
                     cmd.Parameters.AddWithValue("@client_id", client_id);
                     cmd.Parameters.AddWithValue("@date_of_rental", date_of_rental);
-                    cmd.Parameters.AddWithValue("@date_of_return", date_of_return);
+                    cmd.Parameters.AddWithValue("@date_of_return", date_of_return == null ? DBNull.Value : date_of_return);
 
                     cmd.ExecuteNonQuery();
                 }

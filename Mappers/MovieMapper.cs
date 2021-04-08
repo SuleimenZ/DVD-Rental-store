@@ -33,6 +33,57 @@ namespace DVD_Rental_store
             }
         }
 
+        public Movie GetByCopyId(int id)
+        {
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT * FROM movies " +
+                                                   "JOIN copies ON copies.movie_id = movies.movie_id " +
+                                                   "WHERE copy_id = @id", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    NpgsqlDataReader reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        string title = (string)reader["title"];
+                        int year = (int)reader["year"];
+                        int ageRestriction = (int)reader["age_restriction"];
+                        double price = Convert.ToDouble(reader["price"]);
+                        return new Movie(id, title, year, ageRestriction, price);
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+            }
+        }
+
+        public int GetLastId()
+        {
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT MAX(movie_id) FROM movies", conn))
+                {
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        return (int)reader["max"];
+                    }
+                    return 0;
+                }
+
+            }
+        }
+
+        public int GetNextId()
+        {
+            return GetLastId() + 1;
+        }
+
         public void Save(Movie movie)
         {
             var title = movie.Title;
