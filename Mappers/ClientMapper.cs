@@ -22,7 +22,7 @@ namespace DVD_Rental_store
                     {
                         string firstName = (string)reader["first_name"];
                         string lastName = (string)reader["last_name"];
-                        string birthdate = (string)reader["birthday"];
+                        DateTime birthdate = (DateTime)reader["birthday"];
                         return new Client(id, firstName, lastName, birthdate);
                     }
                     else
@@ -61,7 +61,7 @@ namespace DVD_Rental_store
         {
             var id = client.Id;
             var firstName = client.FirstName;
-            var lastName = client.FirstName;
+            var lastName = client.LastName;
             var birthdate = client.Birthdate;
 
             using (var conn = new NpgsqlConnection(connection_string))
@@ -73,7 +73,7 @@ namespace DVD_Rental_store
                     cmd.Parameters.AddWithValue("@id", id);
                     cmd.Parameters.AddWithValue("@firstName", firstName);
                     cmd.Parameters.AddWithValue("@lastName", lastName);
-                    cmd.Parameters.AddWithValue(birthdate, birthdate);
+                    cmd.Parameters.AddWithValue("@birthdate", birthdate);
 
                     cmd.ExecuteNonQuery();
                 }

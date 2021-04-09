@@ -11,9 +11,9 @@ namespace DVD_Rental_store
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public string Birthdate { get; set; }
+        public DateTime Birthdate { get; set; }
 
-        public Client(int id, string firstName, string lastName, string birthdate)
+        public Client(int id, string firstName, string lastName, DateTime birthdate)
         {
             Id = id;
             FirstName = firstName;

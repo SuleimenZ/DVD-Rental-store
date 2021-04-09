@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Data.SqlTypes;
 
 namespace DVD_Rental_store
 {

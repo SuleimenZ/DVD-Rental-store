@@ -7,6 +7,9 @@ namespace DVD_Rental_store
     {
         static void Main(string[] args)
         {
+
+            DateSelector date = new DateSelector();
+
             RentalStore store = new RentalStore();
 
             store.Run();

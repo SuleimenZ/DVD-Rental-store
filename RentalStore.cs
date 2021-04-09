@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,7 +14,8 @@ namespace DVD_Rental_store
             new ConsoleMenuElement("Show Full list", ShowFullList),
             new ConsoleMenuElement("Show by client id", ShowClientRentals),
             new ConsoleMenuElement("Create new rental",CreateRental),
-            new ConsoleMenuElement("Register return of a copy", ReturnOfACopy)};
+            new ConsoleMenuElement("Register return of a copy", ReturnOfACopy),
+            new ConsoleMenuElement("Add new client", CreateClient)};
 
             ConsoleMenu menu = new ConsoleMenu("Menu", menuElements);
             menu.RunMenu();
@@ -123,6 +123,30 @@ namespace DVD_Rental_store
                 rental.SetReturned();
                 rm.Save(rental);
             }
+        }
+
+        public void CreateClient()
+        {
+            DateSelector ds = new DateSelector();
+            ClientMapper clm = new ClientMapper();
+            string name, surname;
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Write name of new client: ");
+                name = Console.ReadLine();
+            } while (string.IsNullOrWhiteSpace(name) || !name.All(char.IsLetter));
+
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Write surname of new client: ");
+                surname = Console.ReadLine();
+            } while (string.IsNullOrWhiteSpace(surname) || !surname.All(char.IsLetter));
+
+            int[] date = ds.GetDate();
+
+            clm.Save(new Client(clm.GetNextId(), name, surname, new DateTime(date[2], date[1], date[0], 0, 0, 0)));
         }
     }
 }
