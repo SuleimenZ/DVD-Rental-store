@@ -84,6 +84,50 @@ namespace DVD_Rental_store
             return GetLastId() + 1;
         }
 
+        public void SaveNewAndAddCopy(Movie movie)
+        {
+            var cm = new CopyMapper();
+            var title = movie.Title;
+            var year = movie.Year;
+            var minAge = movie.AgeRestriction;
+            var id = movie.Id;
+            var price = movie.Price;
+
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                var transaction = conn.BeginTransaction();
+                var cmd = new NpgsqlCommand();
+                cmd.Transaction = transaction;
+                try
+                {
+                    cmd = new NpgsqlCommand("INSERT INTO movies (title, year, age_restriction, movie_id, price)" +
+                                            "VALUES (@title, @year, @minAge, @id, @price)", conn);
+                    cmd.Parameters.AddWithValue("@title", title);
+                    cmd.Parameters.AddWithValue("@year", year);
+                    cmd.Parameters.AddWithValue("@minAge", minAge);
+                    cmd.Parameters.AddWithValue("@id", id);
+                    cmd.Parameters.AddWithValue("@price", price);
+
+                    cmd.ExecuteNonQuery();
+
+                    cmd = new NpgsqlCommand("INSERT INTO copies (copy_id, available, movie_id)" +
+                                            "VALUES (@copy_id, @available, @movie_id)", conn);
+                    cmd.Parameters.AddWithValue("@copy_id", cm.GetNextId());
+                    cmd.Parameters.AddWithValue("@available", true);
+                    cmd.Parameters.AddWithValue("@movie_id", GetNextId());
+
+                    cmd.ExecuteNonQuery();
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    Console.WriteLine(e.ToString());
+                }
+            }
+        }
+
         public void Save(Movie movie)
         {
             var title = movie.Title;
@@ -96,7 +140,9 @@ namespace DVD_Rental_store
             {
                 conn.Open();
                 using (var cmd = new NpgsqlCommand("INSERT INTO movies (title, year, age_restriction, movie_id, price)" +
-                                                   "VALUES (@title, @year, @minAge, @id, @price)", conn))
+                                                   "VALUES (@title, @year, @minAge, @id, @price) " +
+                                                   "ON CONFLICT (movie_id) DO UPDATE " +
+                                                   "SET title = @title, year = @year, minAge = @minAge, price = @price", conn))
                 {
                     cmd.Parameters.AddWithValue("@title", title);
                     cmd.Parameters.AddWithValue("@year", year);

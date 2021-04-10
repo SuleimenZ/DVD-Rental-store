@@ -49,27 +49,14 @@ namespace DVD_Rental_store
                     case ConsoleKey.Enter:
                         return Date;
                 }
-                switch(Date[1])
-                {
-                    case 1: MaxDate[0] = 31; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 2: MaxDate[0] = DateTime.IsLeapYear(Date[2]) ? 29 : 28; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 3: MaxDate[0] = 31; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 4: MaxDate[0] = 30; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 5: MaxDate[0] = 31; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 6: MaxDate[0] = 30; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 7: MaxDate[0] = 31; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 8: MaxDate[0] = 31; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 9: MaxDate[0] = 30; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 10: MaxDate[0] = 31; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 11: MaxDate[0] = 30; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                    case 12: MaxDate[0] = 31; if (Date[0] > MaxDate[0]) { Date[0] = MaxDate[0]; } break;
-                }
+                MaxDate[0] = DateTime.DaysInMonth(Date[2], Date[1]);
+                Date[0] = Date[0] > MaxDate[0] ? MaxDate[0] : Date[0];
             }
         }
 
         public void PrintMenu()
         {
-            Console.WriteLine("Select date using Left arrow, right arrow, enter to finish");
+            Console.WriteLine("Switch between Day/Month/Year with Left arrow/Right arrow. Switch between number using Up arrow/Down arrow. Press Enter to finish");
             for (int i = 0; i < 3; i++)
             {
                 string separator = i < 2 ? "." : "";

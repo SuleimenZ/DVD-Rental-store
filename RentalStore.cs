@@ -15,7 +15,8 @@ namespace DVD_Rental_store
             new ConsoleMenuElement("Show by client id", ShowClientRentals),
             new ConsoleMenuElement("Create new rental",CreateRental),
             new ConsoleMenuElement("Register return of a copy", ReturnOfACopy),
-            new ConsoleMenuElement("Add new client", CreateClient)};
+            new ConsoleMenuElement("Add new client", CreateClient),
+            new ConsoleMenuElement("Add new movie to the database", CreateMovie)};
 
             ConsoleMenu menu = new ConsoleMenu("Menu", menuElements);
             menu.RunMenu();
@@ -135,18 +136,52 @@ namespace DVD_Rental_store
                 Console.Clear();
                 Console.WriteLine("Write name of new client: ");
                 name = Console.ReadLine();
-            } while (string.IsNullOrWhiteSpace(name) || !name.All(char.IsLetter));
+            } while (string.IsNullOrWhiteSpace(name) || !name.Replace(" ", "").All(char.IsLetter));
 
             do
             {
                 Console.Clear();
                 Console.WriteLine("Write surname of new client: ");
                 surname = Console.ReadLine();
-            } while (string.IsNullOrWhiteSpace(surname) || !surname.All(char.IsLetter));
+            } while (string.IsNullOrWhiteSpace(surname) || !surname.Replace(" ", "").All(char.IsLetter));
 
             int[] date = ds.GetDate();
 
             clm.Save(new Client(clm.GetNextId(), name, surname, new DateTime(date[2], date[1], date[0], 0, 0, 0)));
+        }
+
+        public void CreateMovie()
+        {
+            string title;
+            int year, price, ageRestriction;
+            var mm = new MovieMapper();
+            do
+            {
+                Console.Clear();
+                Console.WriteLine("Write name of new movie: ");
+                title = Console.ReadLine();
+            } while (string.IsNullOrWhiteSpace(title) || !title.Replace(" ", "").All(char.IsLetter));
+
+            do
+            {
+                Console.Clear();
+                Console.Write("Write year of this movie: ");
+            } while (!int.TryParse(Console.ReadLine(), out year) || year < 1887 || year > DateTime.Today.Year);
+
+            do
+            {
+                Console.Clear();
+                Console.Write("Write price of this movie: ");
+            } while (!int.TryParse(Console.ReadLine(), out price) || price < 0);
+
+            do
+            {
+                Console.Clear();
+                Console.Write("Write age of restriction: " );
+            } while (!int.TryParse(Console.ReadLine(), out ageRestriction));
+
+            var movie = new Movie(mm.GetNextId(), title, year, ageRestriction, price);
+            mm.SaveNewAndAddCopy(movie);
         }
     }
 }
