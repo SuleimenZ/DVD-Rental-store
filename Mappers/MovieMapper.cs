@@ -127,6 +127,30 @@ namespace DVD_Rental_store
                 }
             }
         }
+        public string GetStatistics()
+        {
+            string stats = "";
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT movies.movie_id, title, SUM(price), COUNT(rental_id) FROM rentals " +
+                                                   "JOIN copies ON copies.copy_id = rentals.copy_id " +
+                                                   "JOIN movies ON movies.movie_id = copies.movie_id " +
+                                                   "JOIN clients ON clients.client_id = rentals.client_id GROUP BY movies.movie_id, title " +
+                                                   "ORDER BY movies.movie_id", conn))
+                {
+                    var reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        double sum = (Single)reader["sum"];
+                        stats += $"\nID {reader["movie_id"]}: {reader["title"]}; Rentals: {reader["count"]}, Money earned: {sum.ToString()}";
+                    }
+                }
+            }
+
+            return $"Total movies: {GetLastId()}. Those which were rented:" + stats;
+        }
 
         public void Save(Movie movie)
         {

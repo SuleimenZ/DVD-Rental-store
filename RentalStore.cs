@@ -11,12 +11,13 @@ namespace DVD_Rental_store
         public void Run()
         {
             ConsoleMenuElement[] menuElements = {
-            new ConsoleMenuElement("Show Full list", ShowFullList),
-            new ConsoleMenuElement("Show by client id", ShowClientRentals),
-            new ConsoleMenuElement("Create new rental",CreateRental),
-            new ConsoleMenuElement("Register return of a copy", ReturnOfACopy),
-            new ConsoleMenuElement("Add new client", CreateClient),
-            new ConsoleMenuElement("Add new movie to the database", CreateMovie)};
+            new ConsoleMenuElement("1.Show Full list", ShowFullList),
+            new ConsoleMenuElement("2.Show by client id", ShowClientRentals),
+            new ConsoleMenuElement("3.Create new rental",CreateRental),
+            new ConsoleMenuElement("4.Register return of a copy", ReturnOfACopy),
+            new ConsoleMenuElement("5.Add new client", CreateClient),
+            new ConsoleMenuElement("6.Add new movie to the database", CreateMovie),
+            new ConsoleMenuElement("7.Show statistics", ShowStatistics)};
 
             ConsoleMenu menu = new ConsoleMenu("Menu", menuElements);
             menu.RunMenu();
@@ -182,6 +183,16 @@ namespace DVD_Rental_store
 
             var movie = new Movie(mm.GetNextId(), title, year, ageRestriction, price);
             mm.SaveNewAndAddCopy(movie);
+        }
+
+        public void ShowStatistics()
+        {
+            var mm = new MovieMapper();
+            var rm = new RentalMapper();
+
+            Console.Clear();
+            Console.WriteLine(rm.GetStatistics() + "\n\n" + mm.GetStatistics());
+            Console.ReadLine();
         }
     }
 }

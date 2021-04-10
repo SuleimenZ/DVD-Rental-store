@@ -94,6 +94,60 @@ namespace DVD_Rental_store
             return rentals;
         }
 
+        public int GetNumberOfRentalsByClientId(int id)
+        {
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT COUNT(rental_id) FROM rentals " +
+                                                   "WHERE client_id = @id", conn))
+                {
+                    cmd.Parameters.AddWithValue("id", id);
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        return (int)(long)reader["count"];
+                    }
+                    return 0;
+                }
+
+            }
+        }
+
+        public string GetStatistics()
+        {
+            string stats = "";
+            string total;
+            double totalsum = 0;
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT clients.client_id, first_name, last_name, SUM(price) FROM rentals " +
+                                                   "JOIN copies ON copies.copy_id = rentals.copy_id " +
+                                                   "JOIN movies ON movies.movie_id = copies.movie_id " +
+                                                   "JOIN clients ON clients.client_id = rentals.client_id " +
+                                                   "GROUP BY clients.client_id, first_name, last_name " +
+                                                   "ORDER BY clients.client_id", conn))
+                {
+                    var reader = cmd.ExecuteReader();
+
+
+                    while (reader.Read())
+                    {
+                        double sum = (Single)reader["sum"];
+                        totalsum += sum;
+                        stats += $"\nID {reader["client_id"]}: {reader["first_name"]} {reader["last_name"]}; " +
+                            $"Money spent: {sum.ToString()}, avg per rental: " +
+                            $"{String.Format("{0:0.00}", sum / GetNumberOfRentalsByClientId((int)reader["client_id"]))}";
+                    }
+                    total = $"Total rentals: {GetLastId()}, total money spent: {totalsum}.";
+                }
+            }
+
+            return total + stats;
+        }
+
         public int GetLastId()
         {
             using (var conn = new NpgsqlConnection(connection_string))
@@ -155,6 +209,28 @@ namespace DVD_Rental_store
                 {
                     cmd.Parameters.AddWithValue("@rental_id", rental_id);
                     cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public override string ToString()
+        {
+            string result = "";
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT * FROM rentals " +
+                                                   "JOIN clients ON clients.client_id = rentals.client_id " +
+                                                   "ORDER BY rental_id", conn))
+                {
+                    var reader = cmd.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        var returned = reader["date_of_return"].ToString() == "" ? "not yet returned" : $"returned on {reader["date_of_return"]}";
+                        result += $"{reader["rental_id"]}: {reader["first_name"]} {reader["last_name"]} rented copy {reader["copy_id"]} on {reader["date_of_rental"]} and {returned} \n";
+                    }
+                    return result;
                 }
             }
         }
