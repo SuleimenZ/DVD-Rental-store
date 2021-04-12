@@ -22,7 +22,11 @@ namespace DVD_Rental_store
                         int copy_id = (int)reader["copy_id"];
                         int client_id = (int)reader["client_id"];
                         DateTime date_of_rental = (DateTime)reader["date_of_rental"];
-                        DateTime date_of_return = (DateTime)reader["date_of_return"];
+                        if (reader["date_of_return"] == null || reader["date_of_return"] == DBNull.Value)
+                        {
+                            return new Rental(rental_id, copy_id, client_id, date_of_rental, null);
+                        }
+                        DateTime? date_of_return = (DateTime?)reader["date_of_return"];
                         return new Rental(rental_id, copy_id, client_id, date_of_rental, date_of_return);
                     }
                     else
@@ -94,6 +98,27 @@ namespace DVD_Rental_store
             return rentals;
         }
 
+        public List<Rental> GetOverdueRentals()
+        {
+            List<Rental> rentals = new List<Rental>();
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT rental_id FROM rentals " +
+                                                   "WHERE date_of_return IS null AND (NOW() - date_of_rental) > '14 day'", conn))
+                {
+                    NpgsqlDataReader reader = cmd.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        int rental_id = (int)reader["rental_id"];
+                        rentals.Add(GetById(rental_id));
+                    }
+                }
+            }
+
+            return rentals;
+        }
+
         public int GetNumberOfRentalsByClientId(int id)
         {
             using (var conn = new NpgsqlConnection(connection_string))
@@ -102,12 +127,34 @@ namespace DVD_Rental_store
                 using (var cmd = new NpgsqlCommand("SELECT COUNT(rental_id) FROM rentals " +
                                                    "WHERE client_id = @id", conn))
                 {
-                    cmd.Parameters.AddWithValue("id", id);
+                    cmd.Parameters.AddWithValue("@id", id);
                     var reader = cmd.ExecuteReader();
 
                     if (reader.Read())
                     {
                         return (int)(long)reader["count"];
+                    }
+                    return 0;
+                }
+
+            }
+        }
+
+        public int GetOverdueInDays(int id)
+        {
+            using (var conn = new NpgsqlConnection(connection_string))
+            {
+                conn.Open();
+                using (var cmd = new NpgsqlCommand("SELECT (NOW() - date_of_rental) AS overdue " +
+                                                   "FROM rentals WHERE rental_id = @id ", conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", id);
+                    var reader = cmd.ExecuteReader();
+
+                    if (reader.Read())
+                    {
+                        var overdue = (TimeSpan)reader["overdue"];
+                        return overdue.Days;
                     }
                     return 0;
                 }

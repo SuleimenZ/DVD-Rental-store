@@ -17,7 +17,8 @@ namespace DVD_Rental_store
             new ConsoleMenuElement("4.Register return of a copy", ReturnOfACopy),
             new ConsoleMenuElement("5.Add new client", CreateClient),
             new ConsoleMenuElement("6.Add new movie to the database", CreateMovie),
-            new ConsoleMenuElement("7.Show statistics", ShowStatistics)};
+            new ConsoleMenuElement("7.Show statistics", ShowStatistics),
+            new ConsoleMenuElement("8.Show overdue rentals", ShowOverdueRentals)};
 
             ConsoleMenu menu = new ConsoleMenu("Menu", menuElements);
             menu.RunMenu();
@@ -192,6 +193,19 @@ namespace DVD_Rental_store
 
             Console.Clear();
             Console.WriteLine(rm.GetStatistics() + "\n\n" + mm.GetStatistics());
+            Console.ReadLine();
+        }
+
+        public void ShowOverdueRentals()
+        {
+            Console.Clear();
+            var rm = new RentalMapper();
+            List<Rental> rentals = rm.GetOverdueRentals();
+
+            foreach(var rental in rentals)
+            {
+                Console.WriteLine($"Rental {rental.Rental_id}: Copy {rental.Copy_id} was rented on {rental.Date_of_rental} and overdue by {rm.GetOverdueInDays(rental.Rental_id)} days.");
+            }
             Console.ReadLine();
         }
     }
