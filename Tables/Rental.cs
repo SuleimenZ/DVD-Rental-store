@@ -19,15 +19,6 @@ namespace DVD_Rental_store
             Date_of_return = date_of_return;
         }
 
-        public Rental(int rental_id, int copy_id, int client_id, DateTime date_of_rental)
-        {
-            Rental_id = rental_id;
-            Copy_id = copy_id;
-            Client_id = client_id;
-            Date_of_rental = date_of_rental;
-            Date_of_return = null;
-        }
-
         public void SetReturned()
         {
             Date_of_return = DateTime.Now;

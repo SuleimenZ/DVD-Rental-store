@@ -22,11 +22,7 @@ namespace DVD_Rental_store
                         int copy_id = (int)reader["copy_id"];
                         int client_id = (int)reader["client_id"];
                         DateTime date_of_rental = (DateTime)reader["date_of_rental"];
-                        if (reader["date_of_return"] == null || reader["date_of_return"] == DBNull.Value)
-                        {
-                            return new Rental(rental_id, copy_id, client_id, date_of_rental, null);
-                        }
-                        DateTime? date_of_return = (DateTime?)reader["date_of_return"];
+                        var date_of_return = reader["date_of_return"] as DateTime?;
                         return new Rental(rental_id, copy_id, client_id, date_of_rental, date_of_return);
                     }
                     else
@@ -54,14 +50,8 @@ namespace DVD_Rental_store
                         int copy_id = (int)reader["copy_id"];
                         int client_id = (int)reader["client_id"];
                         DateTime date_of_rental = (DateTime)reader["date_of_rental"];
-                        if(reader["date_of_return"] == null)
-                        {
-                            return new Rental(rental_id, copy_id, client_id, date_of_rental, (DateTime)reader["date_of_return"]);
-                        }
-                        else
-                        {
-                            return new Rental(rental_id, copy_id, client_id, date_of_rental, null);
-                        }
+                        var date_of_return = reader["date_of_return"] as DateTime?;
+                        return new Rental(rental_id, copy_id, client_id, date_of_rental, date_of_return);
                     }
                     else
                     {
@@ -89,7 +79,7 @@ namespace DVD_Rental_store
                         int rental_id = (int)reader["rental_id"];
                         int copy_id = (int)reader["copy_id"];
                         DateTime date_of_rental = (DateTime)reader["date_of_rental"];
-                        DateTime date_of_return = (DateTime)reader["date_of_return"];
+                        var date_of_return = reader["date_of_return"] as DateTime?;
                         rentals.Add(new Rental(rental_id, copy_id, client_id, date_of_rental, date_of_return));
                     }
                 }

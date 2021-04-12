@@ -35,6 +35,7 @@ namespace DVD_Rental_store
         public void ShowClientRentals()
         {
             int id;
+            string returned;
             RentalMapper rm = new RentalMapper();
 
             do
@@ -44,9 +45,13 @@ namespace DVD_Rental_store
             } while (!int.TryParse(Console.ReadLine(), out id));
 
             List<Rental> rentals = rm.GetClientHistory(id);
+            if(rentals.Count == 0)
+            {
+                Console.WriteLine("No clients with such id exists / No copy is rented by this client yet");
+            }
             foreach (var rental in rentals)
             {
-                string returned = rental.Date_of_return.ToString() == "" ? "not returned yet" : $"returned {rental.Date_of_return}";
+                returned = string.IsNullOrWhiteSpace(rental.Date_of_return.ToString()) ? "not returned yet" : $"returned {rental.Date_of_return}";
                 Console.WriteLine($"Rental of copy {rental.Copy_id}, rented {rental.Date_of_rental} and {returned}");
             }
             Console.ReadLine();
@@ -93,7 +98,7 @@ namespace DVD_Rental_store
             var copy = cpm.GetById(copy_id);
             copy.updateAvailability(false);
             cpm.Save(copy);
-            rm.Save(new Rental(rm.GetNextId(), copy_id, client_id, DateTime.Now));
+            rm.Save(new Rental(rm.GetNextId(), copy_id, client_id, DateTime.Now, null));
         }
 
         public void ReturnOfACopy()
@@ -162,7 +167,7 @@ namespace DVD_Rental_store
                 Console.Clear();
                 Console.WriteLine("Write name of new movie: ");
                 title = Console.ReadLine();
-            } while (string.IsNullOrWhiteSpace(title) || !title.Replace(" ", "").All(char.IsLetter));
+            } while (string.IsNullOrWhiteSpace(title));
 
             do
             {
